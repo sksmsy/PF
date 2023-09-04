@@ -1,0 +1,37 @@
+name: portfolio build
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.21.3
+      
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: execute remote ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.146.56.37.4 }}
+          username: ${{ secrets.ubuntu }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          port: ${{ secrets.8080 }}
+          script: |
+            cd /home/ubuntu/about-me/
+            sudo git pull origin main
+            docker build -t portfolio:1.0 /home/ubuntu/about-me/
+            docker run -m 512m -i -d -p 8080:8080 --rm --name portfolio portfolio:1.0 
+            
+            
